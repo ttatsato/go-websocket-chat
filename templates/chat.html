@@ -1,108 +1,49 @@
 <html>
-    <head>
-        <title>
-            chatroom
-        </title>
-        <link rel="stylesheet"
-              href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
-        <style>
-            #name{margin-bottom:10px}
-        </style>
-    </head>
-    <body>
-        <!-- チャット表示スペース -->
-        <div>
-            <h3>Chat Func Test</h3>
-        </div>
-        <div class="container panel panel-info">
-            <div class="panel-heading">
-                ここにチャット内容が表示されます。
-            </div>
-            <div class="panel-body">
-                <ul id="messages"></ul>
-            </div>
-        </div>
+<head>
+    <title>チャット</title>
+    <style>
+        input { display: block; }
+        ul { list-style: none; }
+    </style>
+</head>
+<body>
+<ul id="messages"></ul>
+WebSocketを使ったチャットアプリケーション
+<form id="chatbox">
+    <textarea></textarea>
+    <input type="submit" value="送信" />
+</form>
 
-        <!-- 入力スペース -->
-        <div>
-            <form id="chatbox">
-                <div>
-                    <div>
-                        <div>
-                            <text>Name</text>
-                        </div>
-                        <input type="text" name="name" size="20" id="name" class="text">
-                    </div>
-                    <div>
-                        <div>
-                            <text>Input Message</text>
-                        </div>
-                        <textarea class="text"></textarea>
-                    </div>
-                </div>
-                <input type="submit" value="送信" 
-                       class="btn btn-success" />                
-            </form>
-        </div>
-        
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js">
-        </script>
-        <script>
-            $(function(){
-                var socket   = null;
-                var name     = $("#name");              // 入力された名前
-                var msgbox   = $("#chatbox textarea");  // 入力されたメッセージ
-                var messages = $("#messages");          // チャット表示スペース
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js">
+</script>
+<script>
+    $(function(){
+        var socket = null;
+        var msgBox = $("#chatbox textarea");
+        var messages = $("#messages");
+        $("#chatbox").submit(function(){
+            if (!msgBox.val()) return false;
+            if (!socket) {
+                alert("エラー: WebSocket接続が行われていません。");
+                return false;
+            }
+            socket.send(msgBox.val());
+            msgBox.val("");
+            return false;
+        });
+        if (!window["WebSocket"]) {
+            alert("エラー: WebSocketに対応していないブラウザです。")
+        } else {
+            socket = new WebSocket("ws://{{.Host}}/room");
+            socket.onclose = function() {
+                alert("接続が終了しました。");
+            }
+            socket.onmessage = function(e) {
+                messages.append($("<li>").text(e.data));
+            }
+        }
+    });
+</script>
 
-                 /* 初回起動時の処理 */
-                 // websocket未対応のブラウザであれば、チャット機能は使えない
-                 if(!window["WebSocket"]){
-                    alert("WebSocketに対応していないブラウザです。");
-                    return false;
-                // websocketに対応しているブラウザの場合
-                } else {
-                    /* socketの開設 */
-                    socket = new WebSocket("ws://localhost:8080/room");
-
-                    // メッセージ受信時の処理を実装
-                    socket.onmessage = function(e) {
-                        var msg = eval("("+e.data+")");
-                        messages.append(
-                            $("<li>").append(
-                                $("<strong>").text(msg.Name + " :"),
-                                $("<p>").text("---->   " + msg.Message).append(
-                                        "      " + "<time>(" + msg.Time + ")</time>"
-                                )
-                            )
-                        );
-                    }
-
-                    // socket終了時の処理を実装
-                    socket.onclose = function() {
-                        //alert("websocket通信が終了しました。");
-                    }
-                }              
-
-                /* 送信ボタン押下時の挙動 */
-                $("#chatbox").submit(function(){
-                    // エラーチェック
-                    if (!msgbox.val()) {
-                        alert("入力がありません。"); return false;
-                    }
-                    if (!socket){
-                        alert("websocketに対応していません。"); return false;                        
-                    }
-
-                    /* socketにデータを送る */
-                    socket.send(JSON.stringify({
-                        "Message": msgbox.val(), // 入力されたメッセージ
-                        "Name": name.val()       // 入力された名前
-                    }));
-                    // メッセージボックスはリセットする
-                    msgbox.val("");
-                    return false;
-                });
-            });
-        </script>
-    </body>
+</body>
 </html>
