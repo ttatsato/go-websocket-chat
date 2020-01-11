@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func main()  {
+func main() {
 	// WEbアプリフレームワーク
 	r := gin.Default()
 	// Websocketを簡単に扱うことのできるパッケージ
@@ -15,20 +15,20 @@ func main()  {
 	m := melody.New()
 	// byte型... a.k.a unit8
 	// unit8 ... 1byte (8bit)  (0 ~ 255)
-	 // golang  では、[]byteを使うことがおおい。string型よりもprimitiveなデータ型でmutable, subsetの置換などの取り扱いがしやすい。
-	m.HandleMessage(func(s *melody.Session, msg []byte){
+	// golang  では、[]byteを使うことがおおい。string型よりもprimitiveなデータ型でmutable, subsetの置換などの取り扱いがしやすい。
+	m.HandleMessage(func(s *melody.Session, msg []byte) {
 		// HandleMessage() WebSocketを通して、送られてきたデータをどのように処理するかを記述する。
 		// 今回はBroadcast()することで接続されているデバイス全てにそのまま転送している。
 		m.Broadcast(msg)
 	})
 
 	// 新たにwebsocketを通して送られてきたデータをどのように処理するかを記述する。
-	m.HandleConnect(func (s *melody.Session) {
+	m.HandleConnect(func(s *melody.Session) {
 		log.Printf("websocket connection open. [session: %#v]\n", s)
 	})
 
 	// なんらかの原因でwebsocketが切れたときに生じる処理を記述。
-	m.HandleDisconnect(func (s *melody.Session){
+	m.HandleDisconnect(func(s *melody.Session) {
 		log.Printf("websocket connection close. [session: %#v]\n", s)
 	})
 
