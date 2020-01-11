@@ -14,8 +14,13 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	e.GET("/:name", func(c echo.Context) error {
+	e.GET("/", func(c echo.Context) error {
 		http.ServeFile(c.Response().Writer, c.Request(), "index.html")
+		return nil
+	})
+
+	e.GET("/channel/:name", func(c echo.Context) error {
+		http.ServeFile(c.Response().Writer, c.Request(), "channel.html")
 		return nil
 	})
 
