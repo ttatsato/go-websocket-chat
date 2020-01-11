@@ -188,9 +188,10 @@
     };
 
     function send_data(){
+        console.log("send_data");
         if (text.value == "")return;
         text.value = escape_html(text.value);
-        let sendData = `{"name":"${name}","message":"${text.value}"}`;
+        let sendData = `{"name":"${name}","message":"${text.value}", "chatRoomId":"${window.location.pathname}"}`;
         ws.send(sendData);
         text.value = "";
     }
