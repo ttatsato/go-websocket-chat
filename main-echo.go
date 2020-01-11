@@ -14,18 +14,20 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	e.GET("/", func(c echo.Context) error {
+	e.GET("/:name", func(c echo.Context) error {
 		http.ServeFile(c.Response().Writer, c.Request(), "index.html")
 		return nil
 	})
 
-	e.GET("/ws", func(c echo.Context) error {
+	e.GET("/ws/channel/:name", func(c echo.Context) error {
 		m.HandleRequest(c.Response().Writer, c.Request())
 		return nil
 	})
 
 	m.HandleMessage(func(s *melody.Session, msg []byte) {
-		m.Broadcast(msg)
+		m.BroadcastFilter(msg, func(q *melody.Session) bool {
+			return q.Request.URL.Path == s.Request.URL.Path
+		})
 	})
 	e.Logger.Fatal(e.Start(":8080"))
 }
