@@ -19,13 +19,20 @@ func main() {
 		return nil
 	})
 
-	e.GET("/ws", func(c echo.Context) error {
+	e.GET("/channel/:name", func(c echo.Context) error {
+		http.ServeFile(c.Response().Writer, c.Request(), "channel.html")
+		return nil
+	})
+
+	e.GET("/ws/channel/:name", func(c echo.Context) error {
 		m.HandleRequest(c.Response().Writer, c.Request())
 		return nil
 	})
 
 	m.HandleMessage(func(s *melody.Session, msg []byte) {
-		m.Broadcast(msg)
+		m.BroadcastFilter(msg, func(q *melody.Session) bool {
+			return q.Request.URL.Path == s.Request.URL.Path
+		})
 	})
 	e.Logger.Fatal(e.Start(":8080"))
 }
